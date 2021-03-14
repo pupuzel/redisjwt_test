@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.jockjock.token.model.AuthUserDetail;
 import com.jockjock.token.model.ResultMap;
 
-public interface AuthService {
+public interface AuthService { 
 	
 	ResultMap AuthenticationToken(AuthUserDetail authUserDetail, HttpServletRequest request) throws Exception;
 	

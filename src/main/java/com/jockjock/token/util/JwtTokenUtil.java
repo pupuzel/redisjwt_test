@@ -51,9 +51,16 @@ public class JwtTokenUtil {
     }
     
     // 유저를 위한 토큰을 발급해준다.
-    public String generateToken(AuthUserDetail userDetails) {
-        userDetails.setAccess_token(null);
-        Map<String,Object> claim = MAPPER.convertValue(userDetails, Map.class);
+    public <T> String generateToken(T userDetails) {
+    	Map<String,Object> claim;
+    	
+    	if(userDetails instanceof AuthUserDetail) {
+    		((AuthUserDetail) userDetails).setAccess_token(null);
+    		claim = MAPPER.convertValue(userDetails, Map.class);
+    	}else {
+    		claim = (Map<String, Object>) userDetails;
+    	}
+        
         claim.put("iat", new Date(System.currentTimeMillis()));
         claim.put("exp", new Date(System.currentTimeMillis() + (1000 * session_timeout) ));
         

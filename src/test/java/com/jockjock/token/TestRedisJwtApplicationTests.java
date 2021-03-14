@@ -17,7 +17,11 @@ class TestRedisJwtApplicationTests {
 
 	@Test
 	void contextLoads() {
-		valueOperations.set("test", "jocks",Duration.ofSeconds(20));
+		//valueOperations.set("test", "jocks",Duration.ofSeconds(30));
+		//System.out.println(valueOperations.get("test"));
+		
+		valueOperations.set("test", "1234", 0);
+		System.out.println(valueOperations.get("test"));
 	}
 
 }

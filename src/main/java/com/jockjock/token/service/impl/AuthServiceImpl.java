@@ -1,6 +1,7 @@
 package com.jockjock.token.service.impl;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -9,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import com.jockjock.token.service.AuthService;
 import com.jockjock.token.util.JwtTokenUtil;
 
 @Service("authService")
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService{ 
 	
 	@Resource(name = "redisTemplate") 
 	private ValueOperations<String, String> valueOperations;
@@ -43,7 +43,7 @@ public class AuthServiceImpl implements AuthService{
 		 * */
 		
 		//token 생성
-		String token = jwtTokenUtil.generateToken(authUserDetail);
+		String token = jwtTokenUtil.<AuthUserDetail>generateToken(authUserDetail);
 		
 		//session save 
 		String uuid = setSession(token, authUserDetail.isCheckAutoLogin());
@@ -59,8 +59,17 @@ public class AuthServiceImpl implements AuthService{
 	
 	@Override
 	public void updateAuthenticationToken(String uuid, HttpServletResponse response) throws Exception {
-		// TODO Auto-generated method stub
+		String token = valueOperations.get(uuid);
+		Map<String,Object> info = jwtTokenUtil.getBobyFromToken(token);
+		String refresh_token = jwtTokenUtil.generateToken(info);
 		
+		if(valueOperations.get(uuid).isEmpty()) {
+			valueOperations.set(token, refresh_token, Duration.ofSeconds(600));
+		}else {
+			valueOperations.set(token, refresh_token, 0);
+		}
+		
+		response.setHeader("refresh_token", refresh_token);
 	}
 
 

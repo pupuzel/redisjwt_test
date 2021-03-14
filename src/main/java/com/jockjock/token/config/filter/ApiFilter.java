@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.jockjock.token.service.AuthService;
 import com.jockjock.token.util.JwtTokenUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +30,11 @@ public class ApiFilter extends OncePerRequestFilter{
 	@Resource(name = "redisTemplate") 
 	private ValueOperations<String, String> valueOperations;
 	
+	@Resource(name = "authService") 
+	private AuthService authService;
+	
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;	
-	
-    @Value("${spring.session.timeout}")
-    private long session_timeout;
 	
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -58,16 +59,23 @@ public class ApiFilter extends OncePerRequestFilter{
 				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			}else{
 				if(jwtTokenUtil.isValidateToken(token)) {
-					Map<String,Object> claim = jwtTokenUtil.getBobyFromToken(token);
+					Map<String,Object> info = jwtTokenUtil.getBobyFromToken(token);
 					
 					if(jwtTokenUtil.isTokenExpired(token)) {
 						
-						boolean isCheckAutoLogin = (boolean) claim.get("checkAutoLogin");
+						boolean isCheckAutoLogin = (boolean) info.get("checkAutoLogin");
 						if(isCheckAutoLogin) {
 							if(valueOperations.get(uuid).isEmpty()) {
 								response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 							}else {
-
+								try {
+									authService.updateAuthenticationToken(uuid, response);
+									filterChain.doFilter(request, response);
+								}catch (Exception e) {
+									log.info("Exception : ", e);
+									response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+								}
+								
 							}
 						}else {
 							response.setStatus(HttpServletResponse.SC_FORBIDDEN);
