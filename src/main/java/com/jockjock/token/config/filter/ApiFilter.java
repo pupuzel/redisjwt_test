@@ -86,7 +86,7 @@ public class ApiFilter extends OncePerRequestFilter{
 					}
 					
 				}else{
-					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				}
 			}
 		}

@@ -59,14 +59,16 @@ public class AuthServiceImpl implements AuthService{
 	
 	@Override
 	public void updateAuthenticationToken(String uuid, HttpServletResponse response) throws Exception {
+		System.out.println("updateAuthenticationToken");
+		
 		String token = valueOperations.get(uuid);
 		Map<String,Object> info = jwtTokenUtil.getBobyFromToken(token);
 		String refresh_token = jwtTokenUtil.generateToken(info);
 		
 		if(valueOperations.get(uuid).isEmpty()) {
-			valueOperations.set(token, refresh_token, Duration.ofSeconds(600));
+			valueOperations.set(uuid, refresh_token, Duration.ofSeconds(600));
 		}else {
-			valueOperations.set(token, refresh_token, 0);
+			valueOperations.set(uuid, refresh_token, 0);
 		}
 		
 		response.setHeader("refresh_token", refresh_token);
