@@ -25,4 +25,5 @@ public class ApiController {
 		
 		return new ResponseEntity<ResultMap>(map, HttpStatus.OK);
 	}
+	
 }
