@@ -70,23 +70,5 @@ public class JwtTokenUtil {
         			.compact();
     }
     
-    
-
-/*
-    // jwt token으로부터 userId를 획득한다.
-    private String getUserIdFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
-    }
-
-    // jwt token으로부터 만료일자를 알려준다.
-    private Date getExpirationDateFromToken(String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
-    }
-    
-    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver){
-        final Claims claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
-    }
- */
 
 }
