@@ -2,7 +2,9 @@ package com.jockjock.token.controller;
 
 import java.util.List;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -30,10 +32,14 @@ public class AuthController {
 	private final AuthService authService;
 	
 	@PostMapping("/authenticate/login")
-	public ResponseEntity<ResultMap> login(@RequestBody @Valid AuthUserDetail authUserDetail, HttpServletRequest request) throws Exception{
-		return new ResponseEntity<ResultMap>(authService.AuthenticationToken(authUserDetail, request), HttpStatus.OK);
+	public ResponseEntity<ResultMap> login(@RequestBody @Valid AuthUserDetail authUserDetail, HttpServletRequest request, HttpServletResponse response) throws Exception{
+		return new ResponseEntity<ResultMap>(authService.AuthenticationToken(authUserDetail, request, response), HttpStatus.OK);
 	}
 	
+	@PostMapping("/authenticate/logout")
+	public ResponseEntity<ResultMap> logout(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		return new ResponseEntity<ResultMap>(authService.AuthenticationRemove(request, response), HttpStatus.OK);
+	}
 	
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ResultMap> modelValid(MethodArgumentNotValidException e) {

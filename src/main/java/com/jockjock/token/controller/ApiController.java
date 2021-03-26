@@ -1,10 +1,13 @@
 package com.jockjock.token.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,13 +19,15 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ApiController {
 
-	@RequestMapping("/api/userInfo")
-	public ResponseEntity<ResultMap> jsonList(){
-		ResultMap map = new ResultMap("Y");
-		map.put("name", "족족몬");
-		map.put("age", 28);
-		map.put("addr", "부천시");
+	@RequestMapping("/api/userinfo")
+	public ResponseEntity<ResultMap> jsonList(HttpServletRequest request){
+		HttpSession session = request.getSession(true);
 		
+		ResultMap map = new ResultMap();
+		map.put("user_id", session.getAttribute("user_id"));
+		map.put("nick_name", session.getAttribute("nick_name"));
+		map.put("auth_type", session.getAttribute("auth_type"));
+
 		return new ResponseEntity<ResultMap>(map, HttpStatus.OK);
 	}
 	

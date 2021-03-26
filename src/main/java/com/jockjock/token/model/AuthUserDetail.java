@@ -24,7 +24,11 @@ public class AuthUserDetail implements Serializable {
 	@NotEmpty
 	private String nick_name;
 	
-	private String profile_img;
+	private String age;
+	
+	private String gender;
+	
+	private String profile_image;
 	
 	private boolean isCheckAutoLogin;
 

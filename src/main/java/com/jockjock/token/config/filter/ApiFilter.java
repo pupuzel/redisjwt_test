@@ -24,7 +24,7 @@ import com.jockjock.token.util.JwtTokenUtil;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-//@WebFilter(urlPatterns = "/api/*")
+@WebFilter(urlPatterns = "/api/*")
 public class ApiFilter extends OncePerRequestFilter{
 	
 	@Resource(name = "redisTemplate") 
@@ -70,6 +70,8 @@ public class ApiFilter extends OncePerRequestFilter{
 							}else {
 								try {
 									authService.updateAuthenticationToken(uuid, response);
+									setSession(request, info);
+									
 									filterChain.doFilter(request, response);
 								}catch (Exception e) {
 									log.info("Exception : ", e);
@@ -82,6 +84,7 @@ public class ApiFilter extends OncePerRequestFilter{
 						}
 						
 					}else{
+						setSession(request, info);
 						filterChain.doFilter(request, response);
 					}
 					

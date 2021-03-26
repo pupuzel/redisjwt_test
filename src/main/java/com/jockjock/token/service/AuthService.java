@@ -8,7 +8,9 @@ import com.jockjock.token.model.ResultMap;
 
 public interface AuthService { 
 	
-	ResultMap AuthenticationToken(AuthUserDetail authUserDetail, HttpServletRequest request) throws Exception;
+	ResultMap AuthenticationToken(AuthUserDetail authUserDetail, HttpServletRequest request, HttpServletResponse response) throws Exception;
+	
+	ResultMap AuthenticationRemove(HttpServletRequest request, HttpServletResponse response) throws Exception;
 	
 	void updateAuthenticationToken(String uuid, HttpServletResponse response) throws Exception;
 }
