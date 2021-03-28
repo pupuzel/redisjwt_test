@@ -33,15 +33,14 @@ public class AuthenticateFilter extends OncePerRequestFilter{
 
 	}
 	
-	
+
 	private void setCORS(HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
-        //response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Allow-Methods","*");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "access-control-allow-origin, Origin, X-Requested-With, Content-Type, Accept, Key, Authorization");		
 	}
 	
 
-	
+
 }

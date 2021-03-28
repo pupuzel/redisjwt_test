@@ -53,7 +53,7 @@ public class ApiFilter extends OncePerRequestFilter{
 			 if(authorizationValidation(request, response, token, uuid)) {
 				 filterChain.doFilter(request, response);
 			 }
-			 		
+
 		}
 	}
 	
