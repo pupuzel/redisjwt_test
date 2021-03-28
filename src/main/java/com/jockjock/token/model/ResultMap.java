@@ -10,7 +10,7 @@ import lombok.Data;
 public class ResultMap extends HashMap<String, Object>{
 
     public ResultMap(){
-		
+		super.put("result", "Y");
 	}
 	
 	public ResultMap(String result) {
