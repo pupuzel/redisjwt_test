@@ -37,12 +37,7 @@ public class AuthServiceImpl implements AuthService{
     private long session_timeout;
 
 	@Override
-	public ResultMap AuthenticationToken(AuthUserDetail authUserDetail, HttpServletRequest request, HttpServletResponse response) throws Exception{
-		
-		//token 검증
-		/**
-		 * 생략
-		 * */
+	public ResultMap AuthenticationToken(AuthUserDetail authUserDetail, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		//token 생성
 		String token = jwtTokenUtil.<AuthUserDetail>generateToken(authUserDetail);
@@ -51,17 +46,10 @@ public class AuthServiceImpl implements AuthService{
 		String uuid = setSession(token, authUserDetail.isCheckAutoLogin());
 		
 		//set cookie
-		Cookie u_uuid = new Cookie("u_uuid", uuid);
-		u_uuid.setPath("/");
-		u_uuid.setHttpOnly(true);
+		setSessionCookie(response, "u_uuid", uuid);
+		setSessionCookie(response, "authorization", token);
 		
-		Cookie authorization = new Cookie("authorization", token);
-		authorization.setPath("/");
-		authorization.setHttpOnly(true);
-		
-		response.addCookie(authorization);
-		response.addCookie(u_uuid);
-		
+		//return value
 		ResultMap map = new ResultMap();
 		map.put("token", token);
 		map.put("uuid", uuid);
@@ -85,7 +73,9 @@ public class AuthServiceImpl implements AuthService{
 		 }
 		 
 		 valueOperations.set(uuid, "", 1 , TimeUnit.MILLISECONDS);
-		
+		 setSessionCookie(response, "u_uuid", "", 0);
+		 setSessionCookie(response, "authorization", "", 0);
+		 
 		return new ResultMap();
 	}
 
@@ -94,8 +84,7 @@ public class AuthServiceImpl implements AuthService{
 
 	@Override
 	public void updateAuthenticationToken(String uuid, HttpServletResponse response) throws Exception {
-		System.out.println("updateAuthenticationToken");
-		
+
 		String token = valueOperations.get(uuid);
 		Map<String,Object> info = jwtTokenUtil.getBobyFromToken(token);
 		String refresh_token = jwtTokenUtil.generateToken(info);
@@ -106,13 +95,9 @@ public class AuthServiceImpl implements AuthService{
 			valueOperations.set(uuid, refresh_token, 0);
 		}
 		
-		Cookie authorization = new Cookie("authorization", refresh_token);
-		authorization.setPath("/");
-		authorization.setHttpOnly(true);
-		response.addCookie(authorization);
+		//set cookie
+		setSessionCookie(response, "authorization", refresh_token);
 	}
-
-
 
 
 	private String setSession(String token, boolean isCheck_auto_login) {
@@ -125,6 +110,21 @@ public class AuthServiceImpl implements AuthService{
 		
 		
 		return uuid;
+	}
+	
+	private void setSessionCookie(HttpServletResponse response, String key, String value) {
+		Cookie cookie = new Cookie(key, value);
+		cookie.setPath("/");
+		cookie.setHttpOnly(true);
+		response.addCookie(cookie);
+	}
+	
+	private void setSessionCookie(HttpServletResponse response, String key, String value, int maxAge) {
+		Cookie cookie = new Cookie(key, value);
+		cookie.setPath("/");
+		cookie.setHttpOnly(true);
+		cookie.setMaxAge(maxAge);
+		response.addCookie(cookie);
 	}
 	
 

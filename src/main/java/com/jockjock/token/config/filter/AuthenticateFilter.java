@@ -19,13 +19,28 @@ public class AuthenticateFilter extends OncePerRequestFilter{
 	
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-		if(request.getHeader("X-Requested-With") == null || !request.getHeader("X-Requested-With").equals("Axios")){
-			 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		}else{
-			 filterChain.doFilter(request, response);
-		}
+		setCORS(response);
+		
+		if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }else {
+    		if(request.getHeader("X-Requested-With") == null || !request.getHeader("X-Requested-With").equals("Axios")){
+    			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	   		}else{
+	   			 filterChain.doFilter(request, response);
+	   		}
+        }
+
 	}
 	
 
+	private void setCORS(HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods","*");
+        response.setHeader("Access-Control-Max-Age", "3600");
+        response.setHeader("Access-Control-Allow-Headers", "access-control-allow-origin, Origin, X-Requested-With, Content-Type, Accept, Key, Authorization");		
+	}
 	
+
+
 }

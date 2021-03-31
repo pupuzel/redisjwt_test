@@ -36,62 +36,24 @@ public class ApiFilter extends OncePerRequestFilter{
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;	
 	
+	/**
+	 * SC_BAD_REQUEST = 400 잘못된 요청
+	 * SC_UNAUTHORIZED = 401 인증 실패
+	 * SC_FORBIDDEN = 403 인가 실패 (재로그인 요청)
+	 * */
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		if(request.getHeader("X-Requested-With") == null || !request.getHeader("X-Requested-With").equals("Axios")){
-			 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}else{
-			 String token = "";
-			 String uuid = "";
+			 String token = getcookieValue(request, "authorization");
+			 String uuid = getcookieValue(request, "u_uuid");
 			 
-			 if(request.getCookies() != null ){
-				for(Cookie cookie : request.getCookies()){
-					if(cookie.getName().equals("authorization")){
-						token = cookie.getValue();
-					}
-					if(cookie.getName().equals("u_uuid")){
-						uuid = cookie.getValue();
-					}
-				}
+			 //세션 토큰 유효성 검사
+			 if(authorizationValidation(request, response, token, uuid)) {
+				 filterChain.doFilter(request, response);
 			 }
-			
-			if(token.isEmpty() || uuid.isEmpty()){
-				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			}else{
-				if(jwtTokenUtil.isValidateToken(token)) {
-					Map<String,Object> info = jwtTokenUtil.getBobyFromToken(token);
-					
-					if(jwtTokenUtil.isTokenExpired(token)) {
-						
-						boolean isCheckAutoLogin = (boolean) info.get("checkAutoLogin");
-						if(isCheckAutoLogin) {
-							if(valueOperations.get(uuid).isEmpty()) {
-								response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-							}else {
-								try {
-									authService.updateAuthenticationToken(uuid, response);
-									setSession(request, info);
-									
-									filterChain.doFilter(request, response);
-								}catch (Exception e) {
-									log.info("Exception : ", e);
-									response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-								}
-								
-							}
-						}else {
-							response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-						}
-						
-					}else{
-						setSession(request, info);
-						filterChain.doFilter(request, response);
-					}
-					
-				}else{
-					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				}
-			}
+
 		}
 	}
 	
@@ -105,7 +67,67 @@ public class ApiFilter extends OncePerRequestFilter{
 			session.setAttribute("profile_img", map.get("profile_img"));
 	}
 	
+	private String getcookieValue(HttpServletRequest request, String key) {
+		String value = "";
+		 if(request.getCookies() != null ){
+			for(Cookie cookie : request.getCookies()){
+				if(cookie.getName().equals(key)){
+					value = cookie.getValue();
+					break;
+				}
+			}
+		 }
+		 
+		 return value;
+	}
 	
+	private boolean authorizationValidation(HttpServletRequest request, HttpServletResponse response, String token, String uuid) {
+		 // 토큰 및 uuid 가 없다면 (401 인증실패)
+		if(token.isEmpty() || uuid.isEmpty()){
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return false;
+		}
+		
+		// 토큰이 유효하지 않다면 (401 인증실패)
+		if(!jwtTokenUtil.isValidateToken(token)) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return false;
+		}
+		
+		// 세션이 Redis에 존재하지 않을 경우 (403 인가실패)
+		if(valueOperations.get(uuid) == null || valueOperations.get(uuid).isEmpty()) { 
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return false;
+		}
+		
+		
+		Map<String,Object> info = jwtTokenUtil.getBobyFromToken(token);
+		boolean isCheckAutoLogin = (boolean) info.get("checkAutoLogin");
+		
+		// 토큰이 만료되었지만 자동 로그인일 경우 token refresh
+		if(jwtTokenUtil.isTokenExpired(token) && isCheckAutoLogin) {
+			try {
+				authService.updateAuthenticationToken(uuid, response);
+				return true;
+			}catch (Exception e) {
+				log.info("Exception : ", e);
+				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				return false;
+			}
+		// 토큰이 만료되고 자동 로그인일 아닐경우 (403 인가실패)
+		}else if(jwtTokenUtil.isTokenExpired(token) && !isCheckAutoLogin){
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return false;
+		
+		}else {
+			setSession(request, info); 
+			return true; 
+		}
+			
+	}
+	
+	
+
 
 	
 }
