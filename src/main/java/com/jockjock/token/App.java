@@ -13,7 +13,7 @@ import com.jockjock.token.domain.post.PostDAO;
 
 @ServletComponentScan
 @SpringBootApplication
-public class TestRedisJwtApplication {
+public class App {
 	
 	@Autowired
 	private PostDAO postDAO;
@@ -22,13 +22,13 @@ public class TestRedisJwtApplication {
 	public ApplicationRunner applicationRun() {
 		return (args) -> {
 			postDAO.save(new Post("jock","첫번째 게시판", "ㅎㅇㅎㅇ"));
-			postDAO.save(new Post("songWs","두번째 게시판", "ㅎㅇㅎㅇ"));
-			postDAO.save(new Post("jjdo1994","세번째 게시판", "ㅎㅇㅎㅇ"));
+			//postDAO.save(new Post("songWs","두번째 게시판", "ㅎㅇㅎㅇ"));
+			//postDAO.save(new Post("jjdo1994","세번째 게시판", "ㅎㅇㅎㅇ"));
 		};
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(TestRedisJwtApplication.class, args);
+		SpringApplication.run(App.class, args);
 	}
 
 }
