@@ -30,7 +30,10 @@ public class JpaServiceImpl implements JpaService{
 		em.clear();   // 영속성 컨텍스트 초기화
 		em.close();   // 영속성 컨텍스트 종료
 	*/
-	@PersistenceContext
+	
+	// PersistenceContext는 영속화된 환경이라고 했었고, 엔티티 매니저는 이 환경에 있는 엔티티들을 관리
+	// EntityManagerFactory가 DI 할 수 있도록 어노테이션 설정
+	@PersistenceContext 
 	private EntityManager em;
 	
 	@Override
@@ -38,7 +41,7 @@ public class JpaServiceImpl implements JpaService{
 		
 		Post test = postDAO.save(new Post("test1","testest", "ㅎㅇㅎㅇ"));
 		
-		em.clear();
+		//em.clear();
 		
 		test.setContent("바꾼 내용");
 	
@@ -48,7 +51,7 @@ public class JpaServiceImpl implements JpaService{
 	@Override
 	public ResultMap selectAll() throws Exception {
 		var map = new ResultMap(); 
-		map.put("resultList", postDAO.findAll());
+		map.put("resultList", postDAO.selectListNative());
 		
 		return map;
 	}
